@@ -1,8 +1,8 @@
 import { Box, Button, Flex, useToast } from '@chakra-ui/react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import axios from 'axios'
 import { Input } from '../Form/Input'
+import { apiAuthClient } from '../../attachment/Auth/services/apiAuthClient'
 
 export function Search({ setFilms }): JSX.Element {
   const [isLoading, setIsLoading] = useState(false)
@@ -17,9 +17,9 @@ export function Search({ setFilms }): JSX.Element {
     setIsLoading(true)
     const { film } = dataSubmit
     // localStorage.setItem('@marvel-next:email', email)
-    const films = await axios.post(`./api/movies-list-get-title-contains`, {
-      film,
-    })
+    const films = await apiAuthClient.get(
+      `./movies-list-get-title-contains/${film}`,
+    )
     const { data } = films
     setFilms(data)
     // const { error, message } = sendSubscribe.data

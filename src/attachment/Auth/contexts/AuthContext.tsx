@@ -22,7 +22,7 @@ if (process.browser) {
         signOut()
         break
       case 'signIn':
-        window.location.replace(`${process.env.NEXT_PUBLIC_BASE_URL}/dashboard`)
+        window.location.replace(`${process.env.NEXT_PUBLIC_API}/`)
       default:
         break
     }
@@ -32,7 +32,7 @@ if (process.browser) {
 export function signOut() {
   destroyCookie(undefined, 'next-omdbapi.token')
   destroyCookie(undefined, 'next-omdbapi.refreshToken')
-  Router.push('/')
+  // Router.push('/')
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
@@ -44,16 +44,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const { 'next-omdbapi.token': token } = parseCookies()
     if (token) {
       apiAuthClient
-        .get('/me')
+        .get<User>(`o-auth-github-me`)
         .then((response) => {
-          const {
-            email,
-            permissions,
-            roles,
-            userName,
-            avatar_url,
-          } = response.data
-          setUser({ email, permissions, roles, userName, avatar_url })
+          const { email, id, name, avatar_url } = response.data
+          setUser({ email, id, name, avatar_url })
         })
         .catch((err) => {
           signOut()
@@ -61,22 +55,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [])
 
-  async function signIn({ email, password }: SignInCredentials) {
+  async function signIn({
+    avatar_url,
+    email,
+    id,
+    name,
+    refreshToken,
+    token,
+  }: SignInCredentials) {
     try {
-      const response = await apiAuthClient.post('sessions', {
-        email,
-        password,
-      })
-
-      const {
-        token,
-        refreshToken,
-        permissions,
-        roles,
-        userName,
-        avatar_url,
-      } = response.data
-
       setCookie(undefined, 'next-omdbapi.token', token, {
         maxAge: 60 * 60 * 24 * 30, // 30 days
         path: '/',
@@ -87,20 +74,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
         path: '/',
       })
 
-      setUser({
-        email,
-        permissions,
-        roles,
-        userName,
-        avatar_url,
-      })
+      // setUser({
+      //   email,
+      //   id,
+      //   name
+      //   avatar_url,
+      // })
 
       apiAuthClient.defaults.headers['Authorization'] = `Bearer ${token}`
 
       if (authChannel && authChannel.name === 'auth') {
         authChannel.postMessage('signIn')
       }
-      Router.push('/dashboard')
+      Router.push('/')
     } catch (error) {
       if (error?.code === 'credentials.invalid') {
         setMessageAuthContext(error.message)
@@ -115,6 +101,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         signOut,
         isAuthenticated,
         user,
+        setUser,
         messageAuthContext,
         authChannel,
       }}

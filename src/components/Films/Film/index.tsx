@@ -1,6 +1,6 @@
+import { ReactNode } from 'react'
 import {
   Box,
-  Divider,
   Flex,
   Grid,
   Center,
@@ -18,7 +18,7 @@ interface IRatings {
   Value: string
   movieId: number
 }
-interface IMovie {
+export interface IMovie {
   id?: number
   Actors: string
   Awards: string
@@ -45,6 +45,7 @@ interface IMovie {
   Writer: string
   Year: string
   Ratings: IRatings[]
+  children?: ReactNode
 }
 export interface IMovieRequest {
   resource: string
@@ -78,6 +79,7 @@ export function Film({
   Writer,
   Year,
   Ratings,
+  children,
 }: IMovie) {
   return (
     <Box
@@ -119,7 +121,6 @@ export function Film({
         >
           <Box>
             {Title && <H1>{Title}</H1>}
-
             {Plot && Plot !== 'N/A' && (
               <H4>
                 <Text as="span" fontWeight="extrabold">
@@ -226,7 +227,7 @@ export function Film({
                 {` ${Awards}`}
               </H4>
             )}
-            {Ratings.length > 0 && (
+            {Ratings && Ratings.length > 0 && (
               <>
                 <Text color="gray.400" fontWeight="extrabold">
                   Ratings:
@@ -292,6 +293,7 @@ export function Film({
               </H4>
             )}
           </Box>
+          {children}
         </Flex>
       </Grid>
     </Box>

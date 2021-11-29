@@ -1,18 +1,34 @@
-import axios from 'axios'
+import { useEffect } from 'react'
 import { GetServerSideProps } from 'next'
-export default function oAuthGithubCallback({ code }) {
-  return <>{code}</>
+import Router from 'next/router'
+import { setCookie } from 'nookies'
+import { apiAuthClient } from '../attachment/Auth/services/apiAuthClient'
+export default function OAuthGithubCallback() {
+  useEffect(() => {
+    Router.push('/')
+  }, [])
+
+  return <></>
 }
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const { code } = ctx.query
 
-  const response = await axios.get(
-    `${process.env.NEXT_BASE_URL_API}/o-auth-github-callback?code=${code}`,
+  const response = await apiAuthClient.get(
+    `${process.env.NEXT_PUBLIC_API}/o-auth-github-callback?code=${code}`,
   )
-  console.log(response.data)
+  const { refreshToken, token } = response.data
+  setCookie(ctx, 'next-omdbapi.token', token, {
+    maxAge: 60 * 60 * 24 * 30, // 30 days
+    path: '/',
+  })
+
+  setCookie(ctx, 'next-omdbapi.refreshToken', refreshToken, {
+    maxAge: 60 * 60 * 24 * 30, // 30 days
+    path: '/',
+  })
 
   return {
-    props: { code: `teste` }, // will be passed to the page component as props
+    props: {},
   }
 }

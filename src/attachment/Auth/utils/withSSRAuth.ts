@@ -22,6 +22,7 @@ export function withSSRAuth<P>(
   ): Promise<GetServerSidePropsResult<P>> => {
     const cookies = parseCookies(ctx)
     const token = cookies['next-omdbapi.token']
+    console.log(token)
 
     if (!token) {
       return {
@@ -29,26 +30,6 @@ export function withSSRAuth<P>(
           destination: '/',
           permanent: false,
         },
-      }
-    }
-
-    if (options) {
-      const user = decode<{ permissions: string[]; roles: string[] }>(token)
-      const { permissions, roles } = options
-
-      const userHasValidPermissions = validateUserPermissions({
-        user,
-        permissions,
-        roles,
-      })
-
-      if (!userHasValidPermissions) {
-        return {
-          redirect: {
-            destination: '/403',
-            permanent: false,
-          },
-        }
       }
     }
 
